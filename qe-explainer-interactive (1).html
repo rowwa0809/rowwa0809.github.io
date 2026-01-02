@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantitative Easing Explained | Rowan Walker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0c;
+            --bg-secondary: #111114;
+            --bg-card: #18181c;
+            --text-primary: #f0f0f2;
+            --text-secondary: #8a8a94;
+            --text-muted: #5a5a64;
+            --accent: #00ff88;
+            --accent-dim: rgba(0, 255, 136, 0.15);
+            --accent-glow: rgba(0, 255, 136, 0.4);
+            --red: #ff4d4d;
+            --red-dim: rgba(255, 77, 77, 0.15);
+            --yellow: #ffd700;
+            --yellow-dim: rgba(255, 215, 0, 0.15);
+            --blue: #4da6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            width: 0%;
+            z-index: 1000;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: width 0.1s ease-out;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--bg-primary), transparent);
+        }
+
+        .nav-logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-sections {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-sections a {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-sections a:hover,
+        .nav-sections a.active {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8rem 3rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 80%;
+            height: 150%;
+            background: radial-gradient(ellipse, var(--accent-dim) 0%, transparent 60%);
+            pointer-events: none;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .hero-content {
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 0.2s forwards;
+        }
+
+        .hero h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(3rem, 7vw, 5.5rem);
+            font-weight: 400;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 0.4s forwards;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 0.6s forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 0.8s forwards;
+        }
+
+        .stat {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .scroll-cta {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 1s forwards;
+        }
+
+        .scroll-line {
+            width: 40px;
+            height: 1px;
+            background: var(--text-muted);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-line::after {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        /* Main Content */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 6rem 0;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-number {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-weight: 400;
+            margin-bottom: 2rem;
+            line-height: 1.2;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Interactive Money Printer */
+        .interactive-demo {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .demo-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        /* Money Supply Simulator */
+        .money-simulator {
+            text-align: center;
+        }
+
+        .money-display {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 3.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .money-display.growing {
+            color: var(--accent);
+            text-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .money-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .simulator-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .sim-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            padding: 1rem 2rem;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.05em;
+        }
+
+        .sim-btn:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .sim-btn.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .sim-btn.reset {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .sim-btn.reset:hover {
+            border-color: var(--red);
+            color: var(--red);
+            background: transparent;
+        }
+
+        /* Impact Meters */
+        .impact-meters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .meter {
+            text-align: center;
+        }
+
+        .meter-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .meter-bar {
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .meter-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease-out;
+        }
+
+        .meter-fill.assets {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .meter-fill.prices {
+            background: var(--yellow);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .meter-fill.wages {
+            background: var(--red);
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+        }
+
+        .meter-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .meter-value.positive { color: var(--accent); }
+        .meter-value.warning { color: var(--yellow); }
+        .meter-value.negative { color: var(--red); }
+
+        /* Cantillon Effect Visualization */
+        .cantillon-viz {
+            margin: 3rem 0;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 2rem 0;
+            position: relative;
+        }
+
+        .flow-node {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            flex: 1;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .flow-node.highlighted {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .flow-node-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-node-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .flow-node-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comparison-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .comparison-card.winners::before {
+            background: var(--accent);
+        }
+
+        .comparison-card.losers::before {
+            background: var(--red);
+        }
+
+        .comparison-card h4 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-card.winners h4 {
+            color: var(--accent);
+        }
+
+        .comparison-card.losers h4 {
+            color: var(--red);
+        }
+
+        .comparison-list {
+            list-style: none;
+        }
+
+        .comparison-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .comparison-list li:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-list .icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Purchasing Power Calculator */
+        .calculator {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .calc-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .calc-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .calc-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .calc-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .calc-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .calc-input-group label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .calc-input-group input {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.5rem;
+            background: var(--bg-primary);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text-primary);
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .calc-input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .calc-result {
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 500;
+        }
+
+        .result-value.positive { color: var(--accent); }
+        .result-value.negative { color: var(--red); }
+
+        .result-explanation {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+        }
+
+        /* Bitcoin Comparison */
+        .btc-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .currency-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .currency-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .currency-name {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .currency-props {
+            text-align: left;
+        }
+
+        .currency-prop {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.85rem;
+        }
+
+        .currency-prop:last-child {
+            border-bottom: none;
+        }
+
+        .prop-label {
+            color: var(--text-muted);
+        }
+
+        .prop-value {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Pull Quote */
+        .pull-quote {
+            border-left: 3px solid var(--accent);
+            padding: 2rem 0 2rem 2rem;
+            margin: 3rem 0;
+        }
+
+        .pull-quote p {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        /* Takeaway Box */
+        .takeaway-box {
+            background: linear-gradient(135deg, var(--accent-dim), transparent);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .takeaway-box h3 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1.5rem;
+        }
+
+        .takeaway-list {
+            list-style: none;
+        }
+
+        .takeaway-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            color: var(--text-secondary);
+        }
+
+        .takeaway-list .check {
+            color: var(--accent);
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+
+        /* Author Section */
+        .author-section {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 4rem 0;
+            margin-top: 4rem;
+        }
+
+        .author-card {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .author-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Instrument Serif', serif;
+            font-size: 2rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .author-info h4 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .author-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .author-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .author-link:hover {
+            opacity: 0.7;
+        }
+
+        /* Impact Grid */
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .impact-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .impact-item:hover {
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .impact-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .impact-content h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .impact-content p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        /* Misconceptions */
+        .misconceptions-list {
+            margin-top: 2rem;
+        }
+
+        .misconception {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .myth, .reality {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .myth {
+            background: var(--red-dim);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .reality {
+            background: var(--accent-dim);
+        }
+
+        .myth-label, .reality-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .myth-label {
+            color: var(--red);
+        }
+
+        .reality-label {
+            color: var(--accent);
+        }
+
+        .myth p, .reality p {
+            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+
+        .myth p {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .reality p {
+            color: var(--text-secondary);
+        }
+
+        /* Advanced Toggle */
+        .advanced-toggle {
+            margin-top: 2rem;
+        }
+
+        .toggle-btn {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .toggle-btn.active {
+            border-color: var(--accent);
+            border-radius: 10px 10px 0 0;
+        }
+
+        .toggle-icon {
+            font-size: 1.25rem;
+            color: var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-btn.active .toggle-icon {
+            transform: rotate(45deg);
+        }
+
+        .advanced-content {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            padding: 1.5rem;
+        }
+
+        .advanced-content.visible {
+            display: block;
+        }
+
+        .advanced-term {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .advanced-term:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .advanced-term:first-child {
+            padding-top: 0;
+        }
+
+        .advanced-term h4 {
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .advanced-term p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            line-height: 1.7;
+        }
+
+        /* Sources Grid */
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .source-item {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .source-item h4 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .source-item p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        .methodology-note {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--yellow);
+            border-radius: 0 8px 8px 0;
+            margin-top: 2rem;
+        }
+
+        .methodology-note h4 {
+            font-size: 0.9rem;
+            color: var(--yellow);
+            margin-bottom: 0.75rem;
+        }
+
+        .methodology-note p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            line-height: 1.7;
+        }
+
+        /* Disclaimer */
+        .disclaimer-section {
+            padding: 3rem 0;
+        }
+
+        .disclaimer-box {
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .disclaimer-box h4 {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .disclaimer-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+
+        footer p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-sections {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 1.5rem 3rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .scroll-cta {
+                display: none;
+            }
+
+            main {
+                padding: 0 1.5rem;
+            }
+
+            section {
+                padding: 4rem 0;
+            }
+
+            .comparison-grid,
+            .calc-inputs,
+            .btc-comparison,
+            .impact-grid,
+            .sources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .impact-meters {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .flow-diagram {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+
+            .author-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <nav>
+        <div class="nav-logo">RW</div>
+        <div class="nav-sections">
+            <a href="#problem" class="active">The Problem</a>
+            <a href="#qe">What is QE</a>
+            <a href="#impact">Who Benefits</a>
+            <a href="#solution">What To Do</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-label">A Financial Explainer</span>
+            <h1>Why the Fed Printing Money Affects <span>Your Paycheck</span></h1>
+            <p class="hero-subtitle">You're doing everything right. Working. Saving. And somehow the math still doesn't add up. Here's why—and what you can do about it.</p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">$6.5T</div>
+                    <div class="stat-label">Fed Balance Sheet (Dec 2025)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">$74.6B</div>
+                    <div class="stat-label">Year-End Repo (Dec 31, 2025)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">48%</div>
+                    <div class="stat-label">Home Price Increase (2019–2024)</div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-cta">
+            <div class="scroll-line"></div>
+            <span>Scroll to learn</span>
+        </div>
+    </section>
+
+    <main>
+        <!-- Section 1: The Problem -->
+        <section id="problem">
+            <span class="section-number">01 — THE PROBLEM</span>
+            <h2>The Problem You Feel But Can't Name</h2>
+            <p>Rent keeps climbing. Groceries cost more than they did two years ago. You watch your paycheck hit your account and wonder how it disappears so fast.</p>
+            <p>Meanwhile, you scroll past headlines about the stock market hitting record highs and wonder who exactly is getting rich—because it's not you.</p>
+            <p><strong>This isn't in your head.</strong> Something real is happening to your money. And it has a name most people have heard but few actually understand.</p>
+            <p>I started digging into this after noticing that no matter how hard I worked—balancing school and 20 hours a week at HEB—the math never seemed to add up. So I took every finance course I could, got certified, and went down the rabbit hole. Here's what I found.</p>
+        </section>
+
+        <!-- Section 2: What QE Is -->
+        <section id="qe">
+            <span class="section-number">02 — THE MECHANISM</span>
+            <h2>What Quantitative Easing Actually Is</h2>
+            <p>Quantitative easing—QE for short—is when the Federal Reserve <strong>creates new money</strong> and uses it to buy financial assets, mostly government bonds and mortgage-backed securities.</p>
+            <p>The Fed doesn't print physical cash. It simply adds numbers to a screen—crediting bank accounts electronically. When the Fed buys a $1 billion Treasury bond from a bank, that bank's reserves increase by $1 billion. <strong>Money that didn't exist yesterday now exists today.</strong></p>
+
+            <!-- Real-Time Example: Dec 31 Repo -->
+            <div class="interactive-demo" style="border-left: 3px solid var(--yellow); margin: 2rem 0;">
+                <div class="demo-header">
+                    <span class="demo-title">Real-Time Example: December 31, 2025</span>
+                    <span class="demo-badge" style="background: var(--yellow-dim); color: var(--yellow);">Just Happened</span>
+                </div>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;">On December 31, 2025, the Federal Reserve injected <strong style="color: var(--text-primary);">$74.6 billion</strong> into the financial system through its Standing Repo Facility—the largest single-day operation of this facility on record.</p>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;"><strong style="color: var(--text-primary);">What happened:</strong> Banks exchanged Treasury securities and mortgage-backed securities for overnight cash. About $31.5 billion was backed by Treasuries; $43.1 billion by mortgage-backed securities.</p>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Why it matters:</strong> This demonstrates how the Fed acts as a "lender of last resort" to maintain liquidity. Analysts note this was <em>routine year-end activity</em>—banks reduce private lending at quarter-end for regulatory reporting, creating temporary cash shortages. The Fed steps in to prevent disruptions.</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0;"><strong>Important context:</strong> This is temporary overnight lending, not permanent QE. The funds are expected to return to the Fed within days. However, the scale—combined with December's total repo activity of $40+ billion—has reignited debate about whether "ample reserves" are as ample as the Fed suggests.</p>
+            </div>
+
+            <div class="interactive-demo">
+                <div class="demo-header">
+                    <span class="demo-title">Interactive: Money Supply Simulator</span>
+                    <span class="demo-badge">Illustrative Model</span>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-bottom: 1.5rem;">Numbers are simplified for demonstration—real economic effects vary based on many factors.</p>
+                <div class="money-simulator">
+                    <div class="money-display" id="moneyDisplay">$10.0T</div>
+                    <div class="money-label">Total Money Supply (M2)</div>
+                    <div class="simulator-controls">
+                        <button class="sim-btn" id="qeBtn">Run QE (+$500B)</button>
+                        <button class="sim-btn reset" id="resetBtn">Reset</button>
+                    </div>
+                    <div class="impact-meters">
+                        <div class="meter">
+                            <div class="meter-label">Asset Prices</div>
+                            <div class="meter-bar">
+                                <div class="meter-fill assets" id="assetMeter" style="width: 30%"></div>
+                            </div>
+                            <div class="meter-value positive" id="assetValue">+30%</div>
+                        </div>
+                        <div class="meter">
+                            <div class="meter-label">Consumer Prices</div>
+                            <div class="meter-bar">
+                                <div class="meter-fill prices" id="priceMeter" style="width: 15%"></div>
+                            </div>
+                            <div class="meter-value warning" id="priceValue">+15%</div>
+                        </div>
+                        <div class="meter">
+                            <div class="meter-label">Real Wages</div>
+                            <div class="meter-bar">
+                                <div class="meter-fill wages" id="wageMeter" style="width: 5%"></div>
+                            </div>
+                            <div class="meter-value negative" id="wageValue">+5%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p>To be clear: QE alone doesn't automatically cause the inflation you feel at the grocery store. Consumer price inflation depends on many factors—fiscal policy, supply chains, productivity, and how fast money actually circulates. But QE does inflate asset prices directly, and when combined with government spending and supply shocks, it contributes to the broader erosion of purchasing power.</p>
+            <p>Think of it like this: Imagine you're at a concert with 10,000 seats and 10,000 tickets. Every ticket has value because it's scarce. Now imagine the venue starts printing 5,000 more tickets and handing them to people in the VIP section.</p>
+            <p>The seats didn't increase. The concert didn't get better. But now your ticket is worth less relative to theirs—and good luck getting a spot near the stage.</p>
+        </section>
+
+        <!-- Section 3: Where Money Goes -->
+        <section id="impact">
+            <span class="section-number">03 — THE FLOW</span>
+            <h2>Where the New Money Actually Goes</h2>
+            <p>When the Fed creates money through QE, it doesn't mail checks to every American. It buys assets from financial institutions—banks, hedge funds, pension funds. These institutions now have more cash on their balance sheets.</p>
+
+            <div class="interactive-demo cantillon-viz">
+                <div class="demo-header">
+                    <span class="demo-title">The Cantillon Effect</span>
+                    <span class="demo-badge">Who Gets It First</span>
+                </div>
+                <div class="flow-diagram" id="flowDiagram">
+                    <div class="flow-node" id="node1">
+                        <div class="flow-node-icon">🏛️</div>
+                        <div class="flow-node-label">Federal Reserve</div>
+                        <div class="flow-node-value">Creates $$$</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node" id="node2">
+                        <div class="flow-node-icon">🏦</div>
+                        <div class="flow-node-label">Banks</div>
+                        <div class="flow-node-value">First Access</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node" id="node3">
+                        <div class="flow-node-icon">📈</div>
+                        <div class="flow-node-label">Asset Markets</div>
+                        <div class="flow-node-value">Prices Rise</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node" id="node4">
+                        <div class="flow-node-icon">👤</div>
+                        <div class="flow-node-label">You</div>
+                        <div class="flow-node-value">Last in Line</div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Who benefits first?</strong> The people and institutions closest to the new money. If you already own a home, QE likely increased your property value. If you hold stocks, your portfolio probably grew.</p>
+            <p>But if you're a 22-year-old working an entry-level job, renting an apartment, and trying to save for the future? You're on the other end of the line. By the time the economic effects trickle down to wages, <strong>the prices have already moved.</strong></p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card winners">
+                    <h4>Who Benefits</h4>
+                    <ul class="comparison-list">
+                        <li><span class="icon">↑</span> Homeowners (property values rise)</li>
+                        <li><span class="icon">↑</span> Stock investors (market gains)</li>
+                        <li><span class="icon">↑</span> Banks (cheap funding)</li>
+                        <li><span class="icon">↑</span> Large corporations (low borrowing costs)</li>
+                    </ul>
+                </div>
+                <div class="comparison-card losers">
+                    <h4>Who Loses Ground</h4>
+                    <ul class="comparison-list">
+                        <li><span class="icon">↓</span> Renters (rising housing costs)</li>
+                        <li><span class="icon">↓</span> Savers (cash loses value)</li>
+                        <li><span class="icon">↓</span> Young workers (wages lag prices)</li>
+                        <li><span class="icon">↓</span> First-time buyers (priced out)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Purchasing Power -->
+        <section id="wages">
+            <span class="section-number">04 — YOUR PAYCHECK</span>
+            <h2>Paychecks vs. Purchasing Power</h2>
+            <p><strong>Nominal wages</strong>—the number on your paycheck—have gone up over the past several years. But <strong>real wages</strong>—what your paycheck can actually buy—have barely moved. In many cases, they've declined.</p>
+
+            <div class="calculator">
+                <div class="calc-header">
+                    <div class="calc-title">Real Raise Calculator</div>
+                    <div class="calc-subtitle">Did your raise actually make you richer?</div>
+                </div>
+                <div class="calc-inputs">
+                    <div class="calc-input-group">
+                        <label>Your Raise</label>
+                        <input type="number" id="raiseInput" value="3" min="0" max="50">
+                        <span style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">%</span>
+                    </div>
+                    <div class="calc-input-group">
+                        <label>Inflation Rate</label>
+                        <input type="number" id="inflationInput" value="6" min="0" max="50">
+                        <span style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">%</span>
+                    </div>
+                </div>
+                <div class="calc-result">
+                    <div class="result-label">Your Real Raise</div>
+                    <div class="result-value negative" id="realRaiseResult">-3%</div>
+                    <div class="result-explanation" id="resultExplanation">You're earning more dollars, but each dollar buys less. You actually lost purchasing power.</div>
+                </div>
+            </div>
+
+            <p>Say you got a 3% raise this year. Sounds good. But if rent went up 8%, groceries went up 5%, and your car insurance increased 12%, your 3% raise didn't make you richer. <strong>It made you poorer.</strong></p>
+            <p>QE accelerates this dynamic. When the money supply expands faster than productivity, wages struggle to keep up with prices. But to be fair: wage stagnation also reflects globalization, automation, declining union power, and productivity mismatches. QE isn't the only factor—but it's one that few people understand, and it consistently benefits asset owners over wage earners.</p>
+        </section>
+
+        <!-- Section 5: What To Do -->
+        <section id="solution">
+            <span class="section-number">05 — THE RESPONSE</span>
+            <h2>Why This Matters for Building Wealth</h2>
+            <p>Understanding this isn't about being angry. It's about being strategic.</p>
+            <p>If you keep all your savings in cash, you're losing purchasing power every year. A dollar saved in 2020 doesn't buy what it bought then. Over time, inflation erodes the value of money sitting still.</p>
+            <p>This doesn't mean cash is useless. Emergency funds matter. Liquidity matters. But long-term wealth building requires putting your money into assets that can outpace inflation.</p>
+
+            <div class="pull-quote">
+                <p>"The same force that inflates asset prices also punishes people who don't own assets."</p>
+            </div>
+
+            <p>None of this is a conspiracy. The Fed implements QE to prevent economic collapse during crises—and it has arguably succeeded at that. During the 2008 financial crisis and the 2020 pandemic, QE helped stabilize markets and prevent deeper recessions. <strong>These are real benefits.</strong></p>
+            <p>But the tradeoffs are also real. You can acknowledge both realities without pretending the system is fair.</p>
+        </section>
+
+        <!-- Section 6: Bitcoin -->
+        <section id="bitcoin">
+            <span class="section-number">06 — AN ALTERNATIVE</span>
+            <h2>Bitcoin & Sound Money</h2>
+            <p>This context explains why Bitcoin exists. Bitcoin was created in 2009—right after the first round of QE—as an alternative to central bank monetary policy.</p>
+            <p>Its core innovation is simple: <strong>a fixed supply of 21 million coins</strong>, enforced by code, with no central authority able to print more.</p>
+
+            <div class="btc-comparison">
+                <div class="currency-card">
+                    <div class="currency-icon">💵</div>
+                    <div class="currency-name">US Dollar</div>
+                    <div class="currency-props">
+                        <div class="currency-prop">
+                            <span class="prop-label">Supply</span>
+                            <span class="prop-value">Unlimited</span>
+                        </div>
+                        <div class="currency-prop">
+                            <span class="prop-label">Control</span>
+                            <span class="prop-value">Federal Reserve</span>
+                        </div>
+                        <div class="currency-prop">
+                            <span class="prop-label">Policy</span>
+                            <span class="prop-value">Discretionary</span>
+                        </div>
+                        <div class="currency-prop">
+                            <span class="prop-label">Transparency</span>
+                            <span class="prop-value">Limited</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="currency-card">
+                    <div class="currency-icon">₿</div>
+                    <div class="currency-name">Bitcoin</div>
+                    <div class="currency-props">
+                        <div class="currency-prop">
+                            <span class="prop-label">Supply</span>
+                            <span class="prop-value">21M Fixed</span>
+                        </div>
+                        <div class="currency-prop">
+                            <span class="prop-label">Control</span>
+                            <span class="prop-value">Decentralized</span>
+                        </div>
+                        <div class="currency-prop">
+                            <span class="prop-label">Policy</span>
+                            <span class="prop-value">Rule-Based</span>
+                        </div>
+                        <div class="currency-prop">
+                            <span class="prop-label">Transparency</span>
+                            <span class="prop-value">Full (Blockchain)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p>Whether you think that's good or bad depends on your view of central banking, monetary policy, and economic stability. Reasonable people disagree.</p>
+            <p>Bitcoin isn't a guaranteed solution to inflation or a risk-free investment. It's volatile, speculative, and uncertain. But understanding why it was created—and why millions of people have adopted it—requires understanding QE.</p>
+        </section>
+
+        <!-- Final Takeaway -->
+        <section id="takeaway">
+            <span class="section-number">07 — THE TAKEAWAY</span>
+            <h2>What to Do With This Knowledge</h2>
+            <p>You now understand something most people don't.</p>
+            <p>You understand why your paycheck feels smaller even when the number is bigger. You understand why asset prices keep rising while wages stagnate. You understand the mechanics of money creation and who benefits from it.</p>
+
+            <div class="takeaway-box">
+                <h3>Key Takeaways</h3>
+                <ul class="takeaway-list">
+                    <li><span class="check">✓</span> QE creates new money that enters through financial institutions first</li>
+                    <li><span class="check">✓</span> Asset owners benefit before wage earners</li>
+                    <li><span class="check">✓</span> Nominal wages ≠ real wages (purchasing power matters)</li>
+                    <li><span class="check">✓</span> Cash loses value over time in an inflationary environment</li>
+                    <li><span class="check">✓</span> Understanding the system is the first step to navigating it</li>
+                </ul>
+            </div>
+
+            <p>This knowledge isn't meant to make you cynical. It's meant to make you clear-eyed. The system isn't rigged in a conspiratorial sense—but it does have structural winners and losers.</p>
+            <p><strong>People who understand the rules play the game differently.</strong> They invest earlier. They hold fewer idle dollars. They think in terms of purchasing power, not just income.</p>
+            <p>You can't control the Fed. You can't vote on interest rates. But you can understand the environment you're operating in and make decisions accordingly.</p>
+            <p><strong>That's not just financial literacy. That's financial self-defense.</strong></p>
+        </section>
+
+        <!-- Why This Matters To You -->
+        <section id="matters">
+            <span class="section-number">08 — REAL IMPACT</span>
+            <h2>Why This Matters to You</h2>
+            <p>Macroeconomics can feel abstract. Here's how these forces touch your life directly:</p>
+            
+            <div class="impact-grid">
+                <div class="impact-item">
+                    <div class="impact-icon">🏠</div>
+                    <div class="impact-content">
+                        <h4>Rent & Housing</h4>
+                        <p>According to the Harvard Joint Center for Housing Studies, median single-family home prices rose approximately 48% between 2019 and 2024—more than twice the rate of median income growth (22%) over the same period.</p>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">🎓</div>
+                    <div class="impact-content">
+                        <h4>College Costs</h4>
+                        <p>Tuition has outpaced general inflation for decades. Multiple factors contribute—including federal loan expansion and administrative costs—though the exact role of monetary policy remains debated among economists.</p>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">💰</div>
+                    <div class="impact-content">
+                        <h4>Your Savings</h4>
+                        <p>When savings account rates fall below inflation, cash loses purchasing power over time. Understanding the difference between nominal and real returns is essential for long-term financial planning.</p>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">📈</div>
+                    <div class="impact-content">
+                        <h4>Long-Term Wealth</h4>
+                        <p>Asset prices and wages often move at different rates. Those who understand these dynamics can make more informed decisions about saving, investing, and career planning.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Common Misconceptions -->
+        <section id="misconceptions">
+            <span class="section-number">09 — CLEARING UP CONFUSION</span>
+            <h2>Common Misconceptions</h2>
+            <p>These topics are frequently oversimplified in public discourse. Here's what the evidence actually shows:</p>
+
+            <div class="misconceptions-list">
+                <div class="misconception">
+                    <div class="myth">
+                        <span class="myth-label">Myth</span>
+                        <p>"Money printing automatically causes inflation"</p>
+                    </div>
+                    <div class="reality">
+                        <span class="reality-label">Reality</span>
+                        <p>The relationship is not automatic. According to the St. Louis Fed, M2 grew at record rates (26.9% year-over-year in February 2021) during 2020–2021, but consumer price inflation didn't spike until later—and multiple factors contributed, including fiscal stimulus, supply chain disruptions, and commodity shocks. From 2008–2019, QE expanded the Fed's balance sheet significantly without causing elevated CPI inflation, because money velocity declined.</p>
+                    </div>
+                </div>
+
+                <div class="misconception">
+                    <div class="myth">
+                        <span class="myth-label">Myth</span>
+                        <p>"The Fed prints physical cash"</p>
+                    </div>
+                    <div class="reality">
+                        <span class="reality-label">Reality</span>
+                        <p>The Fed creates digital bank reserves by crediting accounts electronically. Physical currency (Federal Reserve notes and coins) is produced by the Treasury's Bureau of Engraving and Printing and the U.S. Mint, respectively. "Printing money" is a common metaphor for expanding the monetary base, but the mechanism is electronic, not physical.</p>
+                    </div>
+                </div>
+
+                <div class="misconception">
+                    <div class="myth">
+                        <span class="myth-label">Myth</span>
+                        <p>"QE only benefits the wealthy"</p>
+                    </div>
+                    <div class="reality">
+                        <span class="reality-label">Reality</span>
+                        <p>The effects are uneven, but not exclusively one-sided. QE helped prevent deeper recessions and higher unemployment in 2008–2009 and 2020. However, research (including from the Fed itself) acknowledges that the primary transmission channel—asset price increases—disproportionately benefits those who already own assets. The distributional effects remain an active area of economic research and debate.</p>
+                    </div>
+                </div>
+
+                <div class="misconception">
+                    <div class="myth">
+                        <span class="myth-label">Myth</span>
+                        <p>"Inflation is always bad"</p>
+                    </div>
+                    <div class="reality">
+                        <span class="reality-label">Reality</span>
+                        <p>Most central banks target approximately 2% inflation, which is considered conducive to economic stability. Moderate inflation can encourage spending and investment over cash hoarding. The problem arises when inflation significantly outpaces wage growth, eroding purchasing power—as occurred in 2021–2022 when inflation peaked at 9.1% while average wage growth was around 5%.</p>
+                    </div>
+                </div>
+
+                <div class="misconception">
+                    <div class="myth">
+                        <span class="myth-label">Myth</span>
+                        <p>"Bitcoin solves all monetary problems"</p>
+                    </div>
+                    <div class="reality">
+                        <span class="reality-label">Reality</span>
+                        <p>Bitcoin offers a fixed-supply alternative (21 million coins maximum) to fiat currency, but it has significant tradeoffs: high price volatility, energy consumption concerns, limited transaction throughput, and it is not widely accepted for everyday payments. It represents one response to concerns about monetary policy—not a universal solution. Economists and policymakers continue to debate its long-term role.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced Concepts (Collapsible) -->
+        <section id="advanced">
+            <span class="section-number">10 — GOING DEEPER</span>
+            <h2>Advanced Concepts</h2>
+            <p>For readers seeking more technical precision. These concepts are well-established in mainstream economics.</p>
+
+            <div class="advanced-toggle" id="advancedToggle">
+                <button class="toggle-btn" id="toggleBtn">
+                    <span>Show Advanced Concepts</span>
+                    <span class="toggle-icon">+</span>
+                </button>
+                <div class="advanced-content" id="advancedContent">
+                    <div class="advanced-term">
+                        <h4>QT Ending & Reserve Management Purchases (December 2025)</h4>
+                        <p>On October 29, 2025, the Fed announced it would end quantitative tightening (balance sheet runoff) effective December 1, 2025. Additionally, the December FOMC minutes revealed plans for "reserve management purchases" (RMPs)—buying up to $220 billion in Treasury bills over the next 12 months to maintain "ample reserves." The Fed emphasizes these purchases are for "market functioning," not stimulus—but some analysts debate whether this distinction is meaningful in practice. The record $74.6 billion repo operation on December 31, 2025 highlighted ongoing liquidity management challenges.</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>Standing Repo Facility vs. QE</h4>
+                        <p>The Standing Repo Facility (SRF) provides short-term (typically overnight) collateralized loans to banks, which are repaid quickly—usually within 24 hours. This differs from QE, where the Fed makes outright purchases that remain on its balance sheet indefinitely. However, sustained high usage of the SRF (like December 2025's $74.6 billion operation) can signal that bank reserves are closer to "scarce" than "ample," potentially prompting the Fed to resume permanent asset purchases. The Fed removed the aggregate cap on the SRF in December 2025, ensuring unlimited access during stress periods.</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>Real vs. Nominal Returns</h4>
+                        <p><strong>Nominal return</strong> is the stated percentage gain before adjusting for inflation. <strong>Real return</strong> equals nominal return minus the inflation rate. Example: If your investment gains 7% nominally but inflation is 4%, your real return is approximately 3%. This distinction is fundamental to long-term financial planning. The BLS publishes both nominal and real wage data, showing that since March 2006, nominal weekly wages rose ~78% while real wages rose only ~12% (as of early 2025).</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>Velocity of Money</h4>
+                        <p>Velocity (V) measures how frequently money changes hands in the economy. The equation of exchange states: <strong>MV = PY</strong>, where M = money supply, V = velocity, P = price level, and Y = real output. When the Fed expands M but V declines (as it did during 2008–2019), the effect on prices may be muted. The St. Louis Fed publishes velocity data (FRED series: M2V), which fell sharply after 2008 and again in 2020.</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>Lag Effects in Monetary Policy</h4>
+                        <p>Monetary policy operates with what Milton Friedman called "long and variable lags"—typically estimated at 12–24 months. This means changes in interest rates or QE programs may not fully affect inflation or employment for 1–2 years. The St. Louis Fed has published research noting that this makes real-time policy calibration difficult and explains why the Fed sometimes appears to react "too late" to changing conditions.</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>Transmission Mechanisms of QE</h4>
+                        <p>QE affects the economy through several documented channels: (1) <strong>Portfolio rebalancing</strong>—when the Fed buys bonds, sellers reinvest in riskier assets, pushing up their prices; (2) <strong>Wealth effects</strong>—rising asset prices increase household net worth, potentially boosting consumption; (3) <strong>Signaling</strong>—QE signals the Fed's commitment to keeping rates low. Research from the Fed and academic economists has documented these channels, though the magnitude of each is debated.</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>Monetary vs. Fiscal Policy</h4>
+                        <p><strong>Monetary policy</strong> (conducted by the Fed) involves interest rates and the money supply. <strong>Fiscal policy</strong> (conducted by Congress and the President) involves government spending and taxation. The 2020–2021 period involved both: QE expanded bank reserves while stimulus checks, enhanced unemployment benefits, and PPP loans put money directly into households and businesses. Distinguishing these helps attribute economic outcomes more precisely—a point emphasized by Fed officials and academic economists.</p>
+                    </div>
+
+                    <div class="advanced-term">
+                        <h4>CPI Measurement Limitations</h4>
+                        <p>The Consumer Price Index has documented limitations acknowledged by the BLS itself: (1) It measures an average basket and may not reflect individual experiences; (2) "Substitution bias" occurs because the index may not fully capture consumer switching to cheaper alternatives; (3) "Quality adjustments" (hedonic methods) are necessary but involve judgment calls; (4) Housing costs are measured via "owners' equivalent rent," which some economists argue understates true housing inflation. The BLS publishes alternative indexes (C-CPI-U, R-CPI-E) to address some of these concerns.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sources & Methodology -->
+        <section id="sources">
+            <span class="section-number">11 — TRANSPARENCY</span>
+            <h2>Sources & Methodology</h2>
+            <p>This explainer synthesizes publicly available data from authoritative sources. All statistics are verifiable and subject to revision as new data is released.</p>
+
+            <div class="sources-grid">
+                <div class="source-item">
+                    <h4>Federal Reserve Balance Sheet</h4>
+                    <p>Balance sheet data (WALCL series) from the Federal Reserve's H.4.1 release via FRED. As of December 10, 2025, total Fed assets stood at approximately $6.5 trillion. The Fed officially ended quantitative tightening (balance sheet runoff) on December 1, 2025, after reducing holdings by ~$2.2 trillion since June 2022.</p>
+                </div>
+                <div class="source-item">
+                    <h4>December 2025 Repo Operations</h4>
+                    <p>On December 31, 2025, the Fed's Standing Repo Facility saw $74.6 billion in overnight borrowing—the largest on record for the facility. Total December repo purchases exceeded $40 billion. The Fed also announced plans for up to $220 billion in reserve management purchases over the next 12 months (per December FOMC minutes).</p>
+                </div>
+                <div class="source-item">
+                    <h4>M2 Money Supply</h4>
+                    <p>M2 data (M2SL series) from the Federal Reserve via FRED. Year-over-year M2 growth peaked at 26.9% in February 2021—the highest rate on record (per St. Louis Fed research). M2 subsequently contracted in 2023 before returning to moderate growth (~4% YoY as of late 2025).</p>
+                </div>
+                <div class="source-item">
+                    <h4>Wage & Housing Data</h4>
+                    <p>Real wage data from BLS Current Employment Statistics. Housing prices from the Harvard Joint Center for Housing Studies and FHFA House Price Index. Median single-family home prices rose ~48% from 2019–2024; median incomes rose ~22% over the same period.</p>
+                </div>
+            </div>
+
+            <div class="methodology-note">
+                <h4>Limitations & Known Disagreements</h4>
+                <p><strong>Causation vs. Correlation:</strong> The relationship between QE and inflation is debated among economists. The St. Louis Fed notes that M2 growth in 2020–2021 preceded the 2021–2022 inflation spike, but non-monetary factors—including fiscal stimulus ($5+ trillion in pandemic relief), supply chain disruptions, and the Russia-Ukraine war—also contributed significantly. Attributing specific percentages to each cause is not possible with current data.</p>
+                <p style="margin-top: 1rem;"><strong>Repo vs. QE:</strong> The December 2025 repo operations are technically different from QE. Repos are short-term (often overnight) collateralized loans that are repaid quickly. QE involves outright purchases of securities that remain on the Fed's balance sheet. However, some analysts argue that sustained reliance on repo facilities signals underlying liquidity stress, while the Fed characterizes it as routine year-end activity.</p>
+                <p style="margin-top: 1rem;"><strong>Measurement Limitations:</strong> The CPI has known limitations, including substitution bias and regional variation. The BLS acknowledges that individual inflation experiences may differ from the national average.</p>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <section id="disclaimer" class="disclaimer-section">
+            <div class="disclaimer-box">
+                <h4>📋 Important Disclaimer</h4>
+                <p>This website is for <strong>educational purposes only</strong> and does not constitute financial, investment, tax, or legal advice. The author is not a licensed financial professional.</p>
+                <p>The content reflects publicly available data from sources including the Federal Reserve, Bureau of Labor Statistics, and academic research. All statistics are subject to revision as new data is released. Economic relationships described here are supported by evidence but involve ongoing debate among economists regarding magnitude and causation.</p>
+                <p>This site is <strong>not affiliated</strong> with any financial institution, political organization, advocacy group, or cryptocurrency project. The goal is to explain economic concepts neutrally—not to promote any investment, asset class, or political position.</p>
+                <p>Readers should conduct their own research and consult qualified professionals before making financial decisions.</p>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 1rem; margin-bottom: 0;"><strong>Data as of:</strong> January 2, 2026. Statistics may have changed since publication.</p>
+            </div>
+        </section>
+
+        <!-- Author -->
+        <section class="author-section">
+            <div class="author-card">
+                <div class="author-avatar">RW</div>
+                <div class="author-info">
+                    <h4>Rowan Walker</h4>
+                    <p>Senior at Bowie High School with certifications in finance, digital marketing, and bitcoin economics through HP Life, Meta, and Saylor Academy. Writing about money, markets, and what they don't teach you in school.</p>
+                    <a href="https://www.linkedin.com/in/rowan-walker-73104b387" target="_blank" rel="noopener noreferrer" class="author-link">
+                        Connect on LinkedIn →
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Rowan Walker. Built to educate.</p>
+    </footer>
+
+    <script>
+        // Progress Bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+
+        // Section Visibility
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-sections a');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -60% 0px',
+            threshold: 0
+        };
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Update nav
+                    const id = entry.target.getAttribute('id');
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            sectionObserver.observe(section);
+        });
+
+        // Money Supply Simulator
+        let moneySupply = 10;
+        let assetGrowth = 30;
+        let priceGrowth = 15;
+        let wageGrowth = 5;
+        let qeRounds = 0;
+
+        const moneyDisplay = document.getElementById('moneyDisplay');
+        const assetMeter = document.getElementById('assetMeter');
+        const priceMeter = document.getElementById('priceMeter');
+        const wageMeter = document.getElementById('wageMeter');
+        const assetValue = document.getElementById('assetValue');
+        const priceValue = document.getElementById('priceValue');
+        const wageValue = document.getElementById('wageValue');
+
+        document.getElementById('qeBtn').addEventListener('click', function() {
+            qeRounds++;
+            moneySupply += 0.5;
+            assetGrowth += 15;
+            priceGrowth += 8;
+            wageGrowth += 2;
+
+            moneyDisplay.textContent = '$' + moneySupply.toFixed(1) + 'T';
+            moneyDisplay.classList.add('growing');
+            setTimeout(() => moneyDisplay.classList.remove('growing'), 500);
+
+            assetMeter.style.width = Math.min(assetGrowth, 100) + '%';
+            priceMeter.style.width = Math.min(priceGrowth, 100) + '%';
+            wageMeter.style.width = Math.min(wageGrowth, 100) + '%';
+
+            assetValue.textContent = '+' + assetGrowth + '%';
+            priceValue.textContent = '+' + priceGrowth + '%';
+            wageValue.textContent = '+' + wageGrowth + '%';
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            moneySupply = 10;
+            assetGrowth = 30;
+            priceGrowth = 15;
+            wageGrowth = 5;
+            qeRounds = 0;
+
+            moneyDisplay.textContent = '$10.0T';
+            assetMeter.style.width = '30%';
+            priceMeter.style.width = '15%';
+            wageMeter.style.width = '5%';
+            assetValue.textContent = '+30%';
+            priceValue.textContent = '+15%';
+            wageValue.textContent = '+5%';
+        });
+
+        // Cantillon Flow Animation
+        const flowNodes = document.querySelectorAll('.flow-node');
+        let currentNode = 0;
+
+        function animateFlow() {
+            flowNodes.forEach(node => node.classList.remove('highlighted'));
+            flowNodes[currentNode].classList.add('highlighted');
+            currentNode = (currentNode + 1) % flowNodes.length;
+        }
+
+        setInterval(animateFlow, 1500);
+
+        // Real Raise Calculator
+        const raiseInput = document.getElementById('raiseInput');
+        const inflationInput = document.getElementById('inflationInput');
+        const realRaiseResult = document.getElementById('realRaiseResult');
+        const resultExplanation = document.getElementById('resultExplanation');
+
+        function calculateRealRaise() {
+            const raise = parseFloat(raiseInput.value) || 0;
+            const inflation = parseFloat(inflationInput.value) || 0;
+            const realRaise = raise - inflation;
+
+            if (realRaise >= 0) {
+                realRaiseResult.textContent = '+' + realRaise.toFixed(1) + '%';
+                realRaiseResult.className = 'result-value positive';
+                resultExplanation.textContent = 'Your raise outpaced inflation. You actually gained purchasing power.';
+            } else {
+                realRaiseResult.textContent = realRaise.toFixed(1) + '%';
+                realRaiseResult.className = 'result-value negative';
+                resultExplanation.textContent = "You're earning more dollars, but each dollar buys less. You actually lost purchasing power.";
+            }
+        }
+
+        raiseInput.addEventListener('input', calculateRealRaise);
+        inflationInput.addEventListener('input', calculateRealRaise);
+
+        // Smooth scroll for nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Advanced Concepts Toggle
+        const toggleBtn = document.getElementById('toggleBtn');
+        const advancedContent = document.getElementById('advancedContent');
+
+        toggleBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            advancedContent.classList.toggle('visible');
+            const span = this.querySelector('span:first-child');
+            if (advancedContent.classList.contains('visible')) {
+                span.textContent = 'Hide Advanced Concepts';
+            } else {
+                span.textContent = 'Show Advanced Concepts';
+            }
+        });
+    </script>
+</body>
+</html>
