@@ -17,15 +17,21 @@ async function rpcCall(method, params) {
 }
 
 async function github(path, options = {}) {
-  const response = await fetch(`https://api.github.com${path}`, {
-    ...options,
-    headers: {
-      accept: 'application/vnd.github+json',
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
-      'x-github-api-version': '2022-11-28',
-      ...options.headers,
-    },
-  });
+  let response;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    response = await fetch(`https://api.github.com${path}`, {
+      ...options,
+      headers: {
+        accept: 'application/vnd.github+json',
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+        'user-agent': 'solana-demo-rescue-monitor',
+        'x-github-api-version': '2022-11-28',
+        ...options.headers,
+      },
+    });
+    if (response.ok || (response.status !== 429 && response.status < 500)) break;
+    if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
+  }
   if (!response.ok) throw new Error(`GitHub ${response.status}: ${await response.text()}`);
   return response.status === 204 ? null : response.json();
 }
