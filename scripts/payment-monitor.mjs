@@ -32,7 +32,7 @@ async function github(path, options = {}) {
     if (response.ok || (response.status !== 429 && response.status < 500)) break;
     if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
   }
-  if (!response.ok) throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+  if (!response.ok) throw new Error(`GitHub ${response.status}`);
   return response.status === 204 ? null : response.json();
 }
 
@@ -51,21 +51,32 @@ const inbound = recent.flatMap((item, i) => {
   return lamports > 0 ? [{ ...item, sol: lamports / 1e9 }] : [];
 });
 
-const issues = await github(`/repos/${owner}/${name}/issues?state=open&per_page=100`);
+let issues = [];
+let issueApiError = '';
+try {
+  issues = await github(`/repos/${owner}/${name}/issues?state=open&per_page=100`);
+} catch (error) {
+  issueApiError = error.message;
+  console.warn(`Order check unavailable: ${issueApiError}`);
+}
 const orders = issues.filter((issue) => !issue.pull_request && issue.number !== 1 && issue.title.startsWith('[RESCUE]'));
 const rows = inbound.length
   ? inbound.map((tx) => `- +${tx.sol.toFixed(9).replace(/0+$/, '').replace(/\.$/, '')} SOL · [transaction](https://solscan.io/tx/${tx.signature})`).join('\n')
   : '- None since baseline';
 const marker = '<!-- autonomous-revenue-monitor -->';
-const body = `${marker}\n## Autonomous revenue monitor\n\n- Last check: ${new Date().toISOString()}\n- Wallet balance: ${(balance.value / 1e9).toFixed(9).replace(/0+$/, '').replace(/\.$/, '')} SOL\n- Matched open orders: ${orders.length}\n- Confirmed inbound transfers after baseline: ${inbound.length}\n\n${rows}\n\nA transfer counts as revenue only after it is matched to an accepted order.`;
-if (process.env.DRY_RUN === '1') {
-  console.log(body);
-  process.exit(0);
+const orderCount = issueApiError ? `unavailable this run (${issueApiError})` : orders.length;
+const body = `${marker}\n## Autonomous revenue monitor\n\n- Last check: ${new Date().toISOString()}\n- Wallet balance: ${(balance.value / 1e9).toFixed(9).replace(/0+$/, '').replace(/\.$/, '')} SOL\n- Matched open orders: ${orderCount}\n- Confirmed inbound transfers after baseline: ${inbound.length}\n\n${rows}\n\nA transfer counts as revenue only after it is matched to an accepted order.`;
+console.log(body);
+if (process.env.DRY_RUN !== '1') {
+  try {
+    const comments = await github(`/repos/${owner}/${name}/issues/1/comments?per_page=100`);
+    const existing = comments.find((comment) => comment.body.includes(marker));
+    await github(existing ? `/repos/${owner}/${name}/issues/comments/${existing.id}` : `/repos/${owner}/${name}/issues/1/comments`, {
+      method: existing ? 'PATCH' : 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ body }),
+    });
+  } catch (error) {
+    console.warn(`Monitor comment deferred: ${error.message}`);
+  }
 }
-const comments = await github(`/repos/${owner}/${name}/issues/1/comments?per_page=100`);
-const existing = comments.find((comment) => comment.body.includes(marker));
-await github(existing ? `/repos/${owner}/${name}/issues/comments/${existing.id}` : `/repos/${owner}/${name}/issues/1/comments`, {
-  method: existing ? 'PATCH' : 'POST',
-  headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ body }),
-});
